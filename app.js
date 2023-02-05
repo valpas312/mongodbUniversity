@@ -49,19 +49,41 @@ const accountsCollection = client.db(dbname).collection(collection_name);
 // };
 
 // Document used as a filter for the find() method
-const documentsToFind = { balance: { $gt: 4700 } };
+// const documentsToFind = { balance: { $gt: 4700 } };
+
+// const main = async () => {
+//   try {
+//     await connectDb();
+//     // find() method is used here to find documents that match the filter
+//     let result = accountsCollection.find(documentsToFind);
+//     // countDocuments() method is used here to count the number of documents that match the filter
+//     let docCount = accountsCollection.countDocuments(documentsToFind);
+//     await result.forEach((doc) => console.log(doc));
+//     console.log(`Found ${await docCount} documents`);
+//   } catch (err) {
+//     console.error(`Error finding documents: ${err}`);
+//   } finally {
+//     await client.close();
+//   }
+// };
+
+//Al igual que con insertOne e insertMany, find y findOne funcionan casi de la misma manera
+
+// Constante para filtrar los documentos a actualizar
+const documentsToUpdate = { account_type: "checking" };
+
+// Constante con el operador de actualizacion
+const update = { $push: { transfers_complete: "TR413308000" } };
 
 const main = async () => {
   try {
     await connectDb();
-    // find() method is used here to find documents that match the filter
-    let result = accountsCollection.find(documentsToFind);
-    // countDocuments() method is used here to count the number of documents that match the filter
-    let docCount = accountsCollection.countDocuments(documentsToFind);
-    await result.forEach((doc) => console.log(doc));
-    console.log(`Found ${await docCount} documents`);
+    let result = await accountsCollection.updateMany(documentsToUpdate, update);
+    result.modifiedCount > 0
+      ? console.log(`Updated ${result.modifiedCount} documents`)
+      : console.log("No documents updated");
   } catch (err) {
-    console.error(`Error finding documents: ${err}`);
+    console.error(`Error updating documents: ${err}`);
   } finally {
     await client.close();
   }
@@ -69,4 +91,4 @@ const main = async () => {
 
 main();
 
-//Al igual que con insertOne e insertMany, find y findOne funcionan casi de la misma manera
+// Se puede usar updateOne para actualizar un solo documento de la misma manera que updateMany
