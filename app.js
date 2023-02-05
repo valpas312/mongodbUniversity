@@ -2,49 +2,71 @@ const { MongoClient } = require("mongoDb");
 
 const uri = require("./atlas_uri.js");
 
-console.log(uri)
+console.log(uri);
 
 const client = new MongoClient(uri);
 
+//Funcion para conectarse a la base de datos
+const connectDb = async () => {
+  try {
+    await client.connect();
+    console.log("Connected to database");
+    const databaseList = await client.db().admin().listDatabases();
+    console.log(databaseList.databases);
+  } catch (err) {
+    console.log(err);
+  }
+};
 
-//Funcion comentada para probar el metodo insertOne
-// const connectDb = async () => {
+//Constantes para almacenar el nombre de la base de datos y la coleccion
+const dbname = "bank";
+const collection_name = "accounts";
+
+//Constante para almacenar la coleccion
+const accountsCollection = client.db(dbname).collection(collection_name);
+
+//Constante para almacenar un documento de ejemplo
+// const sampleAccount = {
+//   account_holder: "Linus Torvalds",
+//   account_id: "MDB829001337",
+//   account_type: "checking",
+//   balance: 50352434,
+// };
+
+//Funcion para insertar un documento en la coleccion
+// const main = async () => {
 //   try {
-//     await client.connect();
-//     console.log("Connected to database");
-//     const databaseList = await client.db().admin().listDatabases();
-//     console.log(databaseList.databases);
+//     await connectDb();
+//     // insertOne method is used here to insert the sampleAccount document
+//     //InsertMany method is used to insert multiple documents
+//     let result = await accountsCollection.insertOne(sampleAccount);
+//     console.log(`Inserted document: ${result.insertedId}`);
 //   } catch (err) {
-//     console.log(err);
+//     console.error(`Error inserting document: ${err}`);
+//   } finally {
+//     await client.close();
 //   }
 // };
 
-// connectDb();
-
-const dbname = "bank"
-const collection_name = "accounts"
- 
-const accountsCollection = client.db(dbname).collection(collection_name)
-
-const sampleAccount = {
- account_holder: "Linus Torvalds",
- account_id: "MDB829001337",
- account_type: "checking",
- balance: 50352434,
-}
+// Document used as a filter for the find() method
+const documentsToFind = { balance: { $gt: 4700 } };
 
 const main = async () => {
   try {
-    await client.connect()
-    // insertOne method is used here to insert the sampleAccount document
-    //InsertMany method is used to insert multiple documents
-    let result = await accountsCollection.insertOne(sampleAccount)
-    console.log(`Inserted document: ${result.insertedId}`)
+    await connectDb();
+    // find() method is used here to find documents that match the filter
+    let result = accountsCollection.find(documentsToFind);
+    // countDocuments() method is used here to count the number of documents that match the filter
+    let docCount = accountsCollection.countDocuments(documentsToFind);
+    await result.forEach((doc) => console.log(doc));
+    console.log(`Found ${await docCount} documents`);
   } catch (err) {
-    console.error(`Error inserting document: ${err}`)
+    console.error(`Error finding documents: ${err}`);
   } finally {
-    await client.close()
+    await client.close();
   }
- }
-  
- main()
+};
+
+main();
+
+//Al igual que con insertOne e insertMany, find y findOne funcionan casi de la misma manera
